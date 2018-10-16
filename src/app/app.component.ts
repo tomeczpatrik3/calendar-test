@@ -1,8 +1,12 @@
 import { Component, ChangeDetectionStrategy, OnInit } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { map } from "rxjs/operators";
-import { CalendarEvent, CalendarDateFormatter, CalendarEventTitleFormatter } from "angular-calendar";
-import { subDays, addDays } from 'date-fns';
+import {
+  CalendarEvent,
+  CalendarDateFormatter,
+  CalendarEventTitleFormatter
+} from "angular-calendar";
+import { subDays, addDays } from "date-fns";
 import {
   isSameMonth,
   isSameDay,
@@ -45,7 +49,7 @@ const timezoneOffsetString = `T00:00:00${direction}${hoursOffset}${minutesOffset
   providers: [
     {
       provide: CalendarDateFormatter,
-      useClass: CustomDateFormatter,
+      useClass: CustomDateFormatter
     },
     {
       provide: CalendarEventTitleFormatter,
@@ -68,7 +72,7 @@ export class AppComponent implements OnInit {
 
   /**
    * Napi nézetben a hétvégi napok kihagyása:
-   * @param direction 
+   * @param direction
    */
   skipWeekends(direction: "back" | "forward"): void {
     if (this.view === "day") {
@@ -91,6 +95,8 @@ export class AppComponent implements OnInit {
   events$: Observable<Array<CalendarEvent<{ film: Film }>>>;
 
   ownEvents$: Observable<Array<CalendarEvent<{ film: Film }>>>;
+
+  ownCalendarEvents: CalendarEvent[];
 
   activeDayIsOpen: boolean = false;
 
@@ -150,8 +156,47 @@ export class AppComponent implements OnInit {
         title: "TESZT",
         start: new Date("2018-10-15"),
         color: colors.yellow
+      },
+      {
+        title: "TESZT2",
+        start: new Date("2018-10-15 12:00"),
+        end: new Date("2018-10-15 13:00"),
+        color: colors.yellow
       }
     ]);
+
+    this.ownCalendarEvents = [
+      {
+        title: "TEST CALENDAR EVENT 1",
+        start: new Date("2018-10-15"),
+        color: colors.yellow,
+        actions: [
+          {
+            label: '<i class="fa fa-fw fa-pencil"></i>',
+            onClick: ({ event }: { event: CalendarEvent }): void => {
+              console.log("Edit event", event);
+            }
+          }
+        ]
+      },
+      {
+        title: "TEST CALENDAR EVENT 2",
+        start: new Date("2018-10-15 12:00"),
+        end: new Date("2018-10-15 13:00"),
+        color: colors.yellow,
+        actions: [
+          {
+            label: '<i class="fa fa-fw fa-times"></i>',
+            onClick: ({ event }: { event: CalendarEvent }): void => {
+              this.ownCalendarEvents = this.ownCalendarEvents.filter(
+                iEvent => iEvent !== event
+              );
+              console.log("Event deleted", event);
+            }
+          }
+        ]
+      }
+    ];
   }
 
   dayClicked({
