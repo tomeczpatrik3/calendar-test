@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, OnInit } from "@angular/core";
+import { Component, ChangeDetectionStrategy, OnInit, ViewEncapsulation } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { map } from "rxjs/operators";
 import {
   CalendarEvent,
+  CalendarMonthViewDay,
   CalendarDateFormatter,
   CalendarEventTitleFormatter
 } from "angular-calendar";
@@ -41,10 +42,11 @@ const timezoneOffsetString = `T00:00:00${direction}${hoursOffset}${minutesOffset
 @Component({
   selector: "app-root",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.css"],
   /**
-   * Saját CalendarDateFormatter használata:
+   * Saját CalendarDateFormatter használata és CalendarEventTitleFormatter használata
    */
   providers: [
     {
@@ -224,5 +226,15 @@ export class AppComponent implements OnInit {
       `https://www.themoviedb.org/movie/${event.meta.film.id}`,
       "_blank"
     );
+  }
+
+  beforeMonthViewRender({ body }: { body: CalendarMonthViewDay[] }): void {
+    body.forEach(day => {
+      if (day.date.getDate() % 2 === 1 && day.inMonth) {
+        day.cssClass = "odd-cell";
+      } else {
+        day.cssClass = "even-cell";
+      }
+    });
   }
 }
