@@ -9,6 +9,15 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 
+/**
+ * Magyar nyelv:
+ */
+import localeHu from '@angular/common/locales/hu';
+import { registerLocaleData } from '@angular/common';
+registerLocaleData(localeHu);
+
+
+
 @NgModule({
   declarations: [
     AppComponent,

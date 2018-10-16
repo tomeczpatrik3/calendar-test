@@ -1,7 +1,8 @@
 import { Component, ChangeDetectionStrategy, OnInit } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { map } from "rxjs/operators";
-import { CalendarEvent } from "angular-calendar";
+import { CalendarEvent, CalendarDateFormatter, CalendarEventTitleFormatter } from "angular-calendar";
+import { subDays, addDays } from 'date-fns';
 import {
   isSameMonth,
   isSameDay,
@@ -15,6 +16,8 @@ import {
 } from "date-fns";
 import { Observable, of } from "rxjs";
 import { colors } from "./utils/colors";
+import { CustomDateFormatter } from "./providers/custom-date-formatter.provider";
+import { CustomEventTitleFormatter } from "./providers/custom-event-title-formatter.provider";
 
 interface Film {
   id: number;
@@ -33,11 +36,55 @@ const timezoneOffsetString = `T00:00:00${direction}${hoursOffset}${minutesOffset
 
 @Component({
   selector: "app-root",
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: "./app.component.html",
-  styleUrls: ["./app.component.css"]
+  styleUrls: ["./app.component.css"],
+  /**
+   * Saját CalendarDateFormatter használata:
+   */
+  providers: [
+    {
+      provide: CalendarDateFormatter,
+      useClass: CustomDateFormatter,
+    },
+    {
+      provide: CalendarEventTitleFormatter,
+      useClass: CustomEventTitleFormatter
+    }
+  ]
 })
 export class AppComponent implements OnInit {
   view: string = "month";
+
+  /**
+   * Magyar nyelv:
+   */
+  locale: string = "hu";
+
+  /**
+   * Speciális hosszúságú hét:
+   */
+  excludeDays: number[] = [0, 6];
+
+  /**
+   * Napi nézetben a hétvégi napok kihagyása:
+   * @param direction 
+   */
+  skipWeekends(direction: "back" | "forward"): void {
+    if (this.view === "day") {
+      if (direction === "back") {
+        while (this.excludeDays.indexOf(this.viewDate.getDay()) > -1) {
+          this.viewDate = subDays(this.viewDate, 1);
+        }
+      } else if (direction === "forward") {
+        while (this.excludeDays.indexOf(this.viewDate.getDay()) > -1) {
+          this.viewDate = addDays(this.viewDate, 1);
+        }
+      }
+    }
+  }
+
+  //-------
 
   viewDate: Date = new Date();
 
@@ -96,13 +143,15 @@ export class AppComponent implements OnInit {
 
     this.events$.subscribe(res => {
       console.log(res);
-    })
+    });
 
-    this.ownEvents$ = of([{
-      title: "TESZT",
-      start: new Date("2018-10-15"),
-      color: colors.yellow
-    }]);
+    this.ownEvents$ = of([
+      {
+        title: "TESZT",
+        start: new Date("2018-10-15"),
+        color: colors.yellow
+      }
+    ]);
   }
 
   dayClicked({
